@@ -1,6 +1,6 @@
-import 'Util.dart';
+import '../Util.dart';
 
-class ItemData extends Object {
+class PlayfabItem extends Object {
   String?   itemId;
   String?   itemClass;
   String?   catalogVersion;
@@ -19,7 +19,7 @@ class ItemData extends Object {
   int?      initialLimitedEditionCount;
   String    issueCount = "1";
 
-  ItemData({
+  PlayfabItem({
     this.itemId,
     this.itemClass,
     this.catalogVersion,
@@ -39,7 +39,7 @@ class ItemData extends Object {
 
   @override
   String toString() {
-    return indentEncoder.convert({
+    return jsonEncoder.convert({
         "itemId":                       itemId,
         "itemClass":                    itemClass,
         "catalogVersion":               catalogVersion,

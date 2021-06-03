@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'ItemManagerView.dart';
+import 'package:heroes_saga_manager/RefundManager/RefundManagerView.dart';
+import 'ItemManager/ItemManagerView.dart';
 
 void main() {
   runApp(HeroesSagaManagerApp());
@@ -13,47 +13,59 @@ class HeroesSagaManagerApp extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
     return MaterialApp(
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.lightBlue,
       ),
-      home: MainPage(),
+      home: PageWrapper(),
     );
   }
 }
 
-class MainPage extends StatefulWidget {
-  final List                _views = [
-      ItemManagerView(mode: Mode.Item,      key: PageStorageKey("ItemManager"),     ),
-      ItemManagerView(mode: Mode.Container, key: PageStorageKey("ContainerManager"),),
-      ItemManagerView(mode: Mode.ETCItem,   key: PageStorageKey("ETCItemManager"),  )
-    ];
-  final PageStorageBucket   _bucket = PageStorageBucket();
-
+class PageWrapper extends StatefulWidget {
   @override
-  _MainPageState createState() => _MainPageState();
+  _PageWrapperState createState() => _PageWrapperState();
 }
 
-class _MainPageState extends State<MainPage> {
-  int _currentIndex = 0;
+class _PageWrapperState extends State<PageWrapper> {
+  Widget currentWidget = ItemManager();
+  late BuildContext _scaffContext;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageStorage(
-          bucket: widget._bucket, 
-          child: widget._views[_currentIndex],
-        ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.receipt), label: "아이템 발급"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "컨테이너 발급"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "기타 아이템 발급"),
-        ],
-        onTap: (int newTapSelected) {
-          setState(() {
-            _currentIndex = newTapSelected;
-          });
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
+      floatingActionButton: FloatingActionButton(
+        tooltip: "메뉴 열기",
+        child: Icon(Icons.menu),
+        onPressed: () {
+          Scaffold.of(_scaffContext).openDrawer();
         },
-        currentIndex: _currentIndex,
+      ),
+      body: Builder(
+        builder: (BuildContext context) {
+          _scaffContext = context;
+          return currentWidget;
+        },
+      ),
+      drawer: Drawer(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Expanded(
+              child: MaterialButton(
+                onPressed: () { setState((){currentWidget = ItemManager();}); },
+                child: Text("아이템 관리 페이지"),
+              ),
+            ),
+            Expanded(
+              child: MaterialButton(
+                onPressed: () { setState((){currentWidget = RefundManager();}); },
+                child: Text("환불 관리 페이지"),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
