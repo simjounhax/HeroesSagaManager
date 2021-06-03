@@ -26,8 +26,16 @@ class PageWrapper extends StatefulWidget {
 }
 
 class _PageWrapperState extends State<PageWrapper> {
-  Widget currentWidget = ItemManager();
-  late BuildContext _scaffContext;
+  Widget _itemManager   = ItemManager();
+  Widget _refundManager = RefundManager();
+  late Widget           _currentWidget;
+  late BuildContext     _scaffContext;
+
+  @override
+  void initState() {
+    _currentWidget = _itemManager;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +51,7 @@ class _PageWrapperState extends State<PageWrapper> {
       body: Builder(
         builder: (BuildContext context) {
           _scaffContext = context;
-          return currentWidget;
+          return _currentWidget;
         },
       ),
       drawer: Drawer(
@@ -54,13 +62,21 @@ class _PageWrapperState extends State<PageWrapper> {
           children: [
             Expanded(
               child: MaterialButton(
-                onPressed: () { setState((){currentWidget = ItemManager();}); },
+                onPressed: () {
+                  setState(() {
+                    _currentWidget = _itemManager;
+                  });
+                },
                 child: Text("아이템 관리 페이지"),
               ),
             ),
             Expanded(
               child: MaterialButton(
-                onPressed: () { setState((){currentWidget = RefundManager();}); },
+                onPressed: () {
+                  setState(() {
+                    _currentWidget = _refundManager;
+                  });
+                },
                 child: Text("환불 관리 페이지"),
               ),
             ),
