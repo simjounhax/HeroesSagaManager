@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:heroes_saga_manager/Data/Data.dart';
 import 'package:heroes_saga_manager/Data/Receipt.dart';
 import 'package:http/http.dart';
@@ -60,7 +61,7 @@ Future<Map> getETCItems() async {
       .bodyBytes));
 }
 
-Future<Map> getUserETCItems(String playFabId, String server) async {
+Future<Map> getUserData(String playFabId, {List<String>? keys}) async {
   return json.decode(utf8.decode((await post(
           Uri.parse("$playfab_endpoint/Server/GetUserData"),
           headers: {
@@ -69,9 +70,13 @@ Future<Map> getUserETCItems(String playFabId, String server) async {
           },
           body: json.encode({
             "PlayFabId": playFabId,
-            "Keys": ["${server}ETC"]
-          })))
-      .bodyBytes));
+            "Keys": keys ?? []
+          })
+      )).bodyBytes));
+}
+
+Future<Map> getUserETCItems(String playFabId, String server) async {
+  return getUserData(playFabId, keys: ["${server}ETC"]);
 }
 
 Future<Map> getPlayersInSegment() async {
@@ -232,4 +237,81 @@ Future writePurchaseEmail(String _playfabId, String serverName,
             }
           })))
       .bodyBytes));
+}
+
+void showWaitingDialog(BuildContext _context, {String message = "발급 중입니다..."}) {
+  showDialog(
+      context: _context,
+      builder: (dlgContext) {
+        return AlertDialog(
+            actions: [
+              MaterialButton(
+                color: Colors.lightBlue.shade100,
+                onPressed: () {
+                  Navigator.of(dlgContext).pop();
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.close,
+                        color: Colors.red.shade300,
+                      ),
+                      Text("취소")
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            content: Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 32),
+                    child: CircularProgressIndicator(),
+                  ),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                  )
+                ],
+              ),
+            ));
+      });
+}
+
+Future showErrorDialog(BuildContext context, String message) {
+  return showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          actions: [
+            MaterialButton(
+              child: Text(
+                "확인",
+                style: TextStyle(color: Colors.lightBlue),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+          title: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(
+                  Icons.error,
+                  color: Colors.red,
+                ),
+              ),
+              Text("에러가 발생했습니다")
+            ],
+          ),
+          content: Text(message),
+        );
+      });
 }

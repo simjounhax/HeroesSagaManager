@@ -8,12 +8,8 @@
 			"name": "Flutter",
 			"type": "dart",
 			"request": "launch",
-			"program": "lib/main.dart"
-		},
-		{
-			"name": "Flutter: Attach to Device",
-			"type": "dart",
-			"request": "attach"
+			"program": "lib/main.dart",
+			"deviceId": "windows"
 		}
 	]
 }

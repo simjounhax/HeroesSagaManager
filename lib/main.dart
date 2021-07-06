@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:heroes_saga_manager/ItemManager/ItemQuantityVerifier.dart';
+import 'package:heroes_saga_manager/PostManager/FileOpenerView.dart';
 import 'package:heroes_saga_manager/RefundManager/RefundManagerView.dart';
 import 'ItemManager/ItemManagerView.dart';
 
@@ -15,6 +17,7 @@ class HeroesSagaManagerApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.lightBlue,
       ),
+      debugShowCheckedModeBanner: false,
       home: PageWrapper(),
     );
   }
@@ -26,8 +29,10 @@ class PageWrapper extends StatefulWidget {
 }
 
 class _PageWrapperState extends State<PageWrapper> {
-  Widget _itemManager   = ItemManager();
-  Widget _refundManager = RefundManager();
+  Widget                _itemManager            = ItemManager();
+  Widget                _refundManager          = RefundManager();
+  Widget                _fileOpener             = FileOpenerView();
+  Widget                _weaponQuantityVerifier = CharacterSelectPage();
   late Widget           _currentWidget;
   late BuildContext     _scaffContext;
 
@@ -40,10 +45,10 @@ class _PageWrapperState extends State<PageWrapper> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniStartDocked,
       floatingActionButton: FloatingActionButton(
         tooltip: "메뉴 열기",
-        child: Icon(Icons.menu),
+        child: Icon(Icons.menu, color: Colors.white,),
         onPressed: () {
           Scaffold.of(_scaffContext).openDrawer();
         },
@@ -63,6 +68,7 @@ class _PageWrapperState extends State<PageWrapper> {
             Expanded(
               child: MaterialButton(
                 onPressed: () {
+                  Navigator.of(context).pop();
                   setState(() {
                     _currentWidget = _itemManager;
                   });
@@ -73,11 +79,34 @@ class _PageWrapperState extends State<PageWrapper> {
             Expanded(
               child: MaterialButton(
                 onPressed: () {
+                  Navigator.of(context).pop();
                   setState(() {
                     _currentWidget = _refundManager;
                   });
                 },
                 child: Text("환불 관리 페이지"),
+              ),
+            ),
+            Expanded(
+              child: MaterialButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    _currentWidget = _fileOpener;
+                  });
+                },
+                child: Text("우편 보내기 페이지"),
+              ),
+            ),
+            Expanded(
+              child: MaterialButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    _currentWidget = _weaponQuantityVerifier;
+                  });
+                },
+                child: Text("무기 갯수 검증"),
               ),
             ),
           ],

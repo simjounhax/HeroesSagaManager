@@ -74,16 +74,24 @@ class ItemManagerView extends StatefulWidget {
 }
 
 class _ItemManagerViewState extends State<ItemManagerView> {
+  String selectedPlayerString = "";
+  String selectedCharString = "";
+  String searchStringForId = "";
+  String searchStringForName = "";
   int selectedPlayerIndex = -1;
   int selectedCharIndex = -1;
   late String server;
 
-  List<dynamic> playerList = [];
-  List<dynamic> characterList = [];
-  List<PlayfabItem> itemDataList = [];
+  bool bEnableForIdSearcher = true;
+  bool bEnableForNameSearcher = true;
 
-  late Future<List<dynamic>> _userFetchFuture;
-  late Future<List<dynamic>> _itemFetchFuture;
+  List playerList = [];
+  List characterList = [];
+  List<PlayfabItem> itemDataList = [];
+  List filteredPlayerList = [];
+
+  late Future<List> _userFetchFuture;
+  late Future<List> _itemFetchFuture;
 
   @override
   void initState() {
@@ -124,11 +132,9 @@ class _ItemManagerViewState extends State<ItemManagerView> {
       }
 
       Map<String, dynamic> innerData = items["data"] as Map<String, dynamic>;
-
-      playerList = innerData["PlayerProfiles"] as List;
-      PageStorage.of(context)!
-          .writeState(context, playerList, identifier: widget.playerListKey);
-      return playerList;
+      PageStorage.of(context)!.writeState(context, innerData["PlayerProfiles"],
+          identifier: widget.playerListKey);
+      return innerData["PlayerProfiles"] as List;
     });
 
     switch (widget.mode) {
@@ -145,7 +151,7 @@ class _ItemManagerViewState extends State<ItemManagerView> {
     // 일반 아이템 가져오는 Future 초기화
   }
 
-  Future<List<dynamic>> futureETCItemInitialize() {
+  Future<List> futureETCItemInitialize() {
     return Future(() async {
       if (itemDataList.length > 0) {
         return itemDataList;
@@ -168,8 +174,7 @@ class _ItemManagerViewState extends State<ItemManagerView> {
     });
   }
 
-  Future<List<dynamic>> futureCatalogItemInitialize(
-      {bool isContainer = false}) {
+  Future<List> futureCatalogItemInitialize({bool isContainer = false}) {
     return Future(() async {
       if (itemDataList.length > 0) {
         return itemDataList;
@@ -406,8 +411,7 @@ class _ItemManagerViewState extends State<ItemManagerView> {
   Widget build(BuildContext context) {
     return Scaffold(
         extendBody: true,
-        body: Container(
-            child: Row(
+        body: Row(
           children: [
             Expanded(
               child: Column(
@@ -418,18 +422,70 @@ class _ItemManagerViewState extends State<ItemManagerView> {
                     style: TextStyle(
                         color: Colors.black, fontWeight: FontWeight.bold),
                   )),
+                  Container(
+                    child: TextField(
+                      enabled: bEnableForIdSearcher,
+                      decoration: InputDecoration(hintText: "아이디 검색"),
+                      textAlign: TextAlign.center,
+                      onChanged: (String filterString) {
+                        setState(() {
+                          bEnableForNameSearcher = filterString.isEmpty;
+                          this.searchStringForId = filterString;
+                        });
+                      },
+                    ),
+                  ),
+                  Container(
+                    child: TextField(
+                      enabled: bEnableForNameSearcher,
+                      decoration: InputDecoration(hintText: "이름 검색"),
+                      textAlign: TextAlign.center,
+                      onChanged: (String filterString) {
+                        setState(() {
+                          bEnableForIdSearcher = filterString.isEmpty;
+                          this.searchStringForName = filterString;
+                        });
+                      },
+                    ),
+                  ),
                   FutureBuilder(
                     future: _userFetchFuture,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (playerList.length == 0 &&
                           snapshot.connectionState.index <
                               ConnectionState.done.index) {
-                        return Container(child: CircularProgressIndicator());
+                        return Center(child: CircularProgressIndicator());
+                      }
+
+                      // 플레이어 데이터 넣고
+                      playerList = snapshot.data as List;
+
+                      if (playerList.isNotEmpty) {
+                        if (bEnableForIdSearcher) {
+                          if (searchStringForId.isEmpty) {
+                            filteredPlayerList = playerList;
+                          } else {
+                            filteredPlayerList = playerList
+                                .where((data) => (data["PlayerId"] as String)
+                                    .startsWith(searchStringForId))
+                                .toList();
+                          }
+                        }
+                        if (bEnableForNameSearcher) {
+                          if (searchStringForName.isEmpty) {
+                            filteredPlayerList = playerList;
+                          } else {
+                            filteredPlayerList = playerList
+                                .where((data) => (data["DisplayName"] ?? "")
+                                    .startsWith(searchStringForName))
+                                .toList();
+                          }
+                        }
                       }
 
                       return Expanded(
                         child: ListView.builder(
-                            itemCount: playerList.length,
+                            itemCount: filteredPlayerList.length,
                             itemBuilder: (BuildContext context, int index) {
                               return MaterialButton(
                                 onPressed: () {
@@ -444,7 +500,9 @@ class _ItemManagerViewState extends State<ItemManagerView> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 8.0),
                                         child: Icon(Icons.check,
-                                            color: selectedPlayerIndex == index
+                                            color: filteredPlayerList[index]
+                                                        ["PlayerId"] ==
+                                                    selectedPlayerString
                                                 ? Colors.black
                                                 : Colors.transparent),
                                       ),
@@ -452,7 +510,7 @@ class _ItemManagerViewState extends State<ItemManagerView> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 8.0),
                                         child: Text(
-                                          "${playerList[index]["DisplayName"].toString()} / ${playerList[index]["PlayerId"].toString()}",
+                                          "${filteredPlayerList[index]["DisplayName"].toString()} / ${filteredPlayerList[index]["PlayerId"].toString()}",
                                           textAlign: TextAlign.center,
                                         ),
                                       ),
@@ -632,7 +690,8 @@ class _ItemManagerViewState extends State<ItemManagerView> {
 
                           switch (widget.mode) {
                             case Mode.Container:
-                              PlayfabItem selectedContainer = selectedItems.first;
+                              PlayfabItem selectedContainer =
+                                  selectedItems.first;
                               Map<String, dynamic> inputData = {
                                 "ContainerItemId": selectedContainer.itemId,
                                 "CharacterId": characterList[selectedCharIndex]
@@ -753,51 +812,7 @@ class _ItemManagerViewState extends State<ItemManagerView> {
               ),
             )
           ],
-        )));
-  }
-
-  void showWaitingDialog(BuildContext _context,
-      {String message = "발급 중입니다..."}) {
-    showDialog(
-        context: _context,
-        builder: (dlgContext) {
-          return AlertDialog(
-              actions: [
-                MaterialButton(
-                  color: Colors.lightBlue.shade100,
-                  onPressed: () {
-                    Navigator.of(dlgContext).pop();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.close,
-                          color: Colors.red.shade300,
-                        ),
-                        Text("취소")
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              content: Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 32),
-                      child: CircularProgressIndicator(),
-                    ),
-                    Text(
-                      message,
-                      textAlign: TextAlign.center,
-                    )
-                  ],
-                ),
-              ));
-        });
+        ));
   }
 
   void showErrorDialog(BuildContext _context, {required String errorMessage}) {
@@ -828,9 +843,9 @@ class _ItemManagerViewState extends State<ItemManagerView> {
 
   Future<void> onSelectPlayer(int index) async {
     do {
-      if (playerList.isEmpty) break;
+      if (filteredPlayerList.isEmpty) break;
 
-      String? selectedPlayerId = playerList[index]["PlayerId"]?.toString();
+      String? selectedPlayerId = filteredPlayerList[index]["PlayerId"]?.toString();
       if (selectedPlayerId!.isEmpty) break;
 
       showWaitingDialog(context, message: "캐릭터 조회 중...");

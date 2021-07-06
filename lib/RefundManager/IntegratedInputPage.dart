@@ -132,118 +132,120 @@ class _IntegratedInputPageState extends State<IntegratedInputPage> {
                   },
                 ),
               ),
-              Container(
-                width: narrowWidth,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemBuilder: (ctx, i) {
-                    return Container(
-                      width: narrowWidth,
-                      child: ElevatedButton(
-                          onLongPress: () {
-                            Clipboard.setData(new ClipboardData(
-                                text: _receipts[i].toString()));
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              duration: Duration(seconds: 1),
-                              content: Text("복사되었습니다"),
-                            ));
-                          },
-                          onPressed: () {
-                            showDialog(
-                                barrierDismissible: false,
-                                context: context,
-                                builder: (BuildContext dlgContext) {
-                                  return AlertDialog(
-                                    content: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          "다음 아이템을 발급하시겠습니까?",
+              Expanded(
+                child: Container(
+                  width: narrowWidth,
+                  child: ListView.builder(
+                    itemBuilder: (ctx, i) {
+                      return Container(
+                        width: narrowWidth,
+                        child: ElevatedButton(
+                            onLongPress: () {
+                              Clipboard.setData(new ClipboardData(
+                                  text: _receipts[i].toString()));
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                duration: Duration(seconds: 1),
+                                content: Text("복사되었습니다"),
+                              ));
+                            },
+                            onPressed: () {
+                              showDialog(
+                                  barrierDismissible: false,
+                                  context: context,
+                                  builder: (BuildContext dlgContext) {
+                                    return AlertDialog(
+                                      content: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            "다음 아이템을 발급하시겠습니까?",
+                                          ),
+                                          Text(
+                                            "${_receipts[i].itemId}",
+                                            style: TextStyle(fontSize: 35),
+                                          ),
+                                        ],
+                                      ),
+                                      actions: [
+                                        MaterialButton(
+                                          onPressed: () async {
+                                            Navigator.of(context).pop();
+                                            showDialog(
+                                                barrierDismissible: false,
+                                                context: context,
+                                                builder: (procDlgContext) {
+                                                  return AlertDialog(
+                                                    content: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceEvenly,
+                                                      children: [
+                                                        CircularProgressIndicator(),
+                                                        Text("발급 중입니다..."),
+                                                      ],
+                                                    ),
+                                                  );
+                                                });
+
+                                            dynamic writeResult =
+                                                await writePurchaseEmail(
+                                                    _receipts[i].playFabId,
+                                                    _receipts[i].serverName,
+                                                    _receipts[i].timestamp, [
+                                              PlayfabItem(
+                                                  itemId: _receipts[i].itemId)
+                                            ]);
+                                            print(writeResult);
+                                            Navigator.of(context).pop();
+
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(SnackBar(
+                                              duration: Duration(seconds: 1),
+                                              content: Text("아이템 발급이 완료되었습니다"),
+                                            ));
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              "네",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.blue),
+                                            ),
+                                          ),
                                         ),
-                                        Text(
-                                          "${_receipts[i].itemId}",
-                                          style: TextStyle(fontSize: 35),
+                                        MaterialButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(SnackBar(
+                                              duration: Duration(seconds: 1),
+                                              content: Text("아이템 발급이 취소되었습니다"),
+                                            ));
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              "아니오",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.red),
+                                            ),
+                                          ),
                                         ),
                                       ],
-                                    ),
-                                    actions: [
-                                      MaterialButton(
-                                        onPressed: () async {
-                                          Navigator.of(context).pop();
-                                          showDialog(
-                                              barrierDismissible: false,
-                                              context: context,
-                                              builder: (procDlgContext) {
-                                                return AlertDialog(
-                                                  content: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceEvenly,
-                                                    children: [
-                                                      CircularProgressIndicator(),
-                                                      Text("발급 중입니다..."),
-                                                    ],
-                                                  ),
-                                                );
-                                              });
-
-                                          dynamic writeResult =
-                                              await writePurchaseEmail(
-                                                  _receipts[i].playFabId,
-                                                  _receipts[i].serverName,
-                                                  _receipts[i].timestamp, [
-                                            PlayfabItem(
-                                                itemId: _receipts[i].itemId)
-                                          ]);
-                                          print(writeResult);
-                                          Navigator.of(context).pop();
-
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(SnackBar(
-                                            duration: Duration(seconds: 1),
-                                            content: Text("아이템 발급이 완료되었습니다"),
-                                          ));
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            "네",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.blue),
-                                          ),
-                                        ),
-                                      ),
-                                      MaterialButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(SnackBar(
-                                            duration: Duration(seconds: 1),
-                                            content: Text("아이템 발급이 취소되었습니다"),
-                                          ));
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            "아니오",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.red),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                });
-                          },
-                          child:
-                              Container(child: Text(_receipts[i].toString()))),
-                    );
-                  },
-                  itemCount: _receipts.length,
+                                    );
+                                  });
+                            },
+                            child: Container(
+                                child: Text(_receipts[i].toString()))),
+                      );
+                    },
+                    itemCount: _receipts.length,
+                  ),
                 ),
               )
             ],
