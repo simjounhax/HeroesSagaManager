@@ -485,6 +485,7 @@ class _ItemManagerViewState extends State<ItemManagerView> {
 
                       return Expanded(
                         child: ListView.builder(
+                            controller: ScrollController(),
                             itemCount: filteredPlayerList.length,
                             itemBuilder: (BuildContext context, int index) {
                               return MaterialButton(
@@ -536,6 +537,7 @@ class _ItemManagerViewState extends State<ItemManagerView> {
                   )),
                   Expanded(
                       child: ListView.builder(
+                          controller: ScrollController(),
                           itemCount: characterList.length,
                           itemBuilder: (BuildContext context, int index) {
                             return MaterialButton(

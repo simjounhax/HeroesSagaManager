@@ -84,6 +84,7 @@ class _PostManagerViewState extends State<PostManagerView> {
         } else {
           return Center(
             child: ListView.builder(
+                controller: ScrollController(),
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, itemIndex) {
                   return Text(

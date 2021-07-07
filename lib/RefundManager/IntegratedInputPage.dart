@@ -136,6 +136,7 @@ class _IntegratedInputPageState extends State<IntegratedInputPage> {
                 child: Container(
                   width: narrowWidth,
                   child: ListView.builder(
+                    controller: ScrollController(),
                     itemBuilder: (ctx, i) {
                       return Container(
                         width: narrowWidth,

@@ -150,6 +150,7 @@ class _CharacterSelectPageState extends State<CharacterSelectPage> {
                         Expanded(
                           flex: 9,
                           child: ListView.builder(
+                              controller: ScrollController(),
                               itemCount: filteredPlayerList.length,
                               itemBuilder: (BuildContext context, int index) {
                                 return MaterialButton(
@@ -199,6 +200,7 @@ class _CharacterSelectPageState extends State<CharacterSelectPage> {
           Expanded(
             child: Container(
               child: ListView.builder(
+                  controller: ScrollController(),
                   itemCount: characterList.length,
                   itemBuilder: (BuildContext context, int index) {
                     return MaterialButton(

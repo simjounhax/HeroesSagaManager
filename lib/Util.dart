@@ -83,14 +83,38 @@ Future<Map> getPlayersInSegment() async {
   var currentName = extractCurrentFucntionName(StackTrace.current);
   currentName = currentName[0].toUpperCase() + currentName.substring(1);
 
-  return json.decode(utf8.decode((await post(
-          Uri.parse("$playfab_endpoint/Admin/$currentName"),
-          headers: {
-            "X-SecretKey": secretKey,
-            "Content-Type": "application/json; charset=utf-8"
-          },
-          body: json.encode({"SegmentId": "D663CFCD517F0F03"})))
-      .bodyBytes));
+  String? continuationToken;
+  Map     returnData = {};
+  do{
+    var result = json.decode(utf8.decode((await post(
+              Uri.parse("$playfab_endpoint/Admin/$currentName"),
+              headers: {
+                "X-SecretKey": secretKey,
+                "Content-Type": "application/json; charset=utf-8"
+              },
+              body: json.encode({
+                "SegmentId": "D663CFCD517F0F03",
+                "ContinuationToken": continuationToken
+              })))
+          .bodyBytes));
+
+    if (200 != result["code"] || "OK" != result["status"])
+      break;
+
+    continuationToken = result["data"]["ContinuationToken"] as String?;
+    
+    if (returnData.isEmpty)
+    {
+      returnData = result;
+    }
+    else
+    {
+      (returnData["data"]["PlayerProfiles"] as List).addAll(result["data"]["PlayerProfiles"]);
+    }
+  } while(null != continuationToken);
+
+  (returnData["data"] as Map).remove("ContinuationToken");
+  return returnData;
 }
 
 Future<Map> getAllUsersCharacters(String _playfabId) async {
