@@ -866,6 +866,7 @@ class _ItemManagerViewState extends State<ItemManagerView> {
       }
 
       setState(() {
+        selectedPlayerString = selectedPlayerId;
         selectedPlayerIndex = index;
         PageStorage.of(context)!.writeState(context, selectedPlayerIndex,
             identifier: widget.selectedPlayerIndexKey);
